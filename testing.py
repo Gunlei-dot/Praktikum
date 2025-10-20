@@ -20,7 +20,6 @@ patient_data = patient_data[patient_data.label != 2] # Remove rows with label 2 
 
 X = pd.get_dummies(patient_data.drop("label", axis=1)) # dummies for categorical variables since DecisionTree doesn't handle them directly
 y = pd.get_dummies(patient_data.drop(columns=["age", "staging", "px", "psa"])) # Features and target variable
-#y = patient_data["label" and "set_val" and "sat_train" and "pseudo_patid"] # Features and target variable
 #X_train, X_test, y_train, y_test =train_test_split(X, y, test_size=0.2, random_state=42)  (#random_state for reproducibility, same split)
 
 X_train =   X[X.set_train == True]
@@ -47,8 +46,6 @@ print("Accuracy:", accuracy)
 print(confusion_matrix(y_test, predictions))   
 print(classification_report(y_test, predictions))
   
-
-#tree.plot_tree(model, filled=True) # Visualize the decision tree 
+#plt.figure(figsize=(12,12)) # setting the figure size
+#tree.plot_tree(model, filled=True, fontsize=6) # Visualize the decision tree 
 #plt.show() # Display the decision tree
-#print(y_test)
-#print (predictions)
