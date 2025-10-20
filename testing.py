@@ -16,6 +16,7 @@ patient_data = patient_data.drop(columns=['pseudo_id']) # Drop patient_id as it'
 patient_data = patient_data.drop(columns=['sex']) # Drop sex as it's not a feature for prediction
 patient_data = patient_data.drop(columns=['pseudo_patid']) # Drop pst_id as it's not a feature for prediction
 patient_data = patient_data[patient_data.label != 2] # Remove rows with label 2 as these are not relevant for binary classification
+patient_data = patient_data[patient_data.psa != 'NA'] # remove rows with no psa value till i find a better solution
 
 X = pd.get_dummies(patient_data.drop("label", axis=1)) # dummies for categorical variables since DecisionTree doesn't handle them directly
 y = pd.get_dummies(patient_data.drop(columns=["age", "staging", "px", "psa"])) # Features and target variable
