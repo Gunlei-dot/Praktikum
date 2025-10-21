@@ -3,9 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import mlflow
 import mlflow.sklearn
+from mlflow.models import infer_signature
 from sklearn import tree
 #from sklearn.model_selection import train_test_split #function currently not used
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score # metrics for manual model eval
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score  # metrics for manual model eval
 
 patient_data = pd.read_csv(r'C:\Users\s434037\Desktop\Bachelor\projects\labels.tsv', encoding='utf-8', sep='\t') #encoding and sep to read tsv correctly
 patient_data = patient_data.dropna() # Drop rows with missing values for simplicity 
@@ -55,14 +56,21 @@ model = model.fit(X_train, y_train)
 y_pred = model.predict(X_test) # Make predictions on the test set
 metrics = {
         "accuracy": accuracy_score(y_test, y_pred),
-        "confusion_matrix": confusion_matrix(y_test, y_pred).tolist(), # Convert to list for logging
-        "classification_report": classification_report(y_test, y_pred, output_dict=True) # Convert to dict for logging
+        "precision": precision_score(y_test, y_pred, average="weighted"), 
+        "recall": recall_score(y_test, y_pred, average="weighted"),
+        "f1_score": f1_score(y_test, y_pred, average='weighted'),
     }
 mlflow.log_metrics(metrics) # Log evaluation metrics to MLflow
    
-signature = mlflow.sklearn.infer_signature(X_train, model.predict(X_train)) # Infer model signature for input and output schema
+signature = infer_signature(X_train, model.predict(X_train)) # Infer model signature for input and output schema
     
-mlflow.sklearn.log_model(model, "decision_tree_model", signature = signature) # Log the trained model to MLflow
+mlflow.sklearn.log_model(
+    sk_model=model,
+    name= "decision_tree_model", 
+    signature = signature) 
+# Log the trained model to MLflow
+
+
 print("Metrics logged to MLflow:")
 print(metrics)
    
