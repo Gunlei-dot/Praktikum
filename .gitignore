@@ -1,3 +1,5 @@
 labels.tsv
 testing.ipynb
 mlruns/
+!models/~/metrics/
+!models/~/params/   
