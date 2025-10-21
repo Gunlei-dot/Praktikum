@@ -16,8 +16,12 @@ patient_data = patient_data.drop(columns=['pseudo_patid']) # Drop pst_id as it's
 patient_data = patient_data[patient_data.label != 2] # Remove rows with label 2 as these are not relevant for binary classification
 patient_data = patient_data[patient_data.psa != 'NA'] # remove rows with no psa value till i find a better solution
 patient_data = patient_data[patient_data.staging != 'primary'] # remove rows with primary staging till i find a better solution
+patient_data['age'] = patient_data['age'].astype(float) # convert psa to float
+patient_data['px'] = patient_data['px'].astype(float) # convert psa to float
+
 X = pd.get_dummies(patient_data.drop("label", axis=1)) # dummies for categorical variables since DecisionTree doesn't handle them directly
 y = pd.get_dummies(patient_data.drop(columns=["age", "staging", "px", "psa"])) # Features and target variable
+
 #X_train, X_test, y_train, y_test =train_test_split(X, y, test_size=0.2, random_state=42)  (#random_state for reproducibility, same split)
 
 X_train =   X[X.set_train == True]
