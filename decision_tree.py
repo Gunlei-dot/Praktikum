@@ -77,23 +77,4 @@ mlflow.sklearn.log_model(
 
 print("Metrics logged to MLflow:")
 print(metrics)
-   
-'''    train_score = model.score(X_train, y_train) # Training accuracy
-    test_score = model.score(X_test, y_test) # Test accuracy
 
-    print(f"Training accuracy: {train_score:.3f}")
-    print(f"Test accuracy: {test_score:.3f}")'''
-
-#predictions = model.predict(X_test) #predictions made by flow
-
-#y_test=np.array([row[0] for row in y_test])
-#predictions=np.array([row[0] for row in predictions])
-#accuracy = accuracy_score(y_test, predictions) # Calculate accuracy''' # Calculate predictions and accuracy, now logged by mlflow
-
-'''print("Accuracy:", accuracy)
-print(confusion_matrix(y_test, predictions))   
-print(classification_report(y_test, predictions))''' # Print accuracy, confusion matrix, and classification report, now logged by mlflow
-  
-#plt.figure(figsize=(12,12)) # setting the figure size
-#tree.plot_tree(model, filled=True, fontsize=6) # Visualize the decision tree 
-#plt.show() # Display the decision tree
