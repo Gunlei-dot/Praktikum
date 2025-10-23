@@ -5,8 +5,11 @@ import mlflow
 import mlflow.sklearn
 from mlflow.models import infer_signature
 from sklearn import tree
+from sklearn.model_selection import GridSearchCV
 #from sklearn.model_selection import train_test_split #function currently not used
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score  # metrics for manual model eval
+
+mlflow.sklearn.autolog(max_tuning_runs=10)
 
 patient_data = pd.read_csv(r'C:\Users\s434037\Desktop\Bachelor\projects\labels.tsv', encoding='utf-8', sep='\t') #encoding and sep to read tsv correctly
 patient_data = patient_data.dropna() # Drop rows with missing values for simplicity 
@@ -29,6 +32,16 @@ X_test =    X[X.set_val == True]
 y_train =   y[y.set_train == True]
 y_test =    y[y.set_val == True]
 
+param_grid = {
+    'criterion': ['gini', 'entropy'],
+    'max_depth': [None, 10, 20, 30],
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4],
+    'min_weight_fraction_leaf': [0.0, 0.1, 0.2],
+    'min_impurity_decrease': [0.0, 0.1, 0.2],
+    'ccp_alpha': [0.0, 0.01, 0.1]
+}
+
 # Dropping the set indicator columns after the split
 X_train = X_train.drop(columns=['set_train', 'set_val']) # Drop the set indicator columns
 X_test = X_test.drop(columns=['set_train', 'set_val']) # Drop the set indicator columns
@@ -37,45 +50,16 @@ y_train = y_train.drop(columns=['set_train', 'set_val']) # Drop the set indicato
 y_test = np.array(y_test).astype(str) # Convert y_test to a NumPy array of strings
 y_train = np.array(y_train).astype(str) # Convert y_train to a NumPy
 
-with mlflow.start_run(): # Start an MLflow run to log parameters, metrics, and the model
-   tree_params = {
-    "criterion": "gini",
-    "splitter": "best",
-    "max_depth": None,
-    "min_samples_split": 2,
-    "min_samples_leaf": 1,
-    "min_weight_fraction_leaf": 0.0,
-    "max_features": None,
-    "random_state": None,
-    "max_leaf_nodes": None,
-    "min_impurity_decrease": 0.0,
-    "class_weight": None,
-    "ccp_alpha": 0.0,
-    "monotonic_cst": None,
-    "min_weight_fraction_leaf": 0.1,
-}
-mlflow.log_params(tree_params) # Log model parameters to MLflow
-model = tree.DecisionTreeClassifier(**tree_params) # Initialize the Decision Tree Classifier with specified parameters
-model = model.fit(X_train, y_train)
+with mlflow.start_run(run_name='decision_tree_param_tuning'): # Start an MLflow run to log parameters, metrics, and the model
+    dt_classifier = tree.DecisionTreeClassifier(random_state=42)
+    grid_search = GridSearchCV(estimator=dt_classifier, param_grid=param_grid, cv=5, n_jobs=-1, scoring='accuracy')
+    grid_search.fit(X_train, y_train)
+    best_params = grid_search.best_params_
+    best_score = grid_search.best_score_
+    model = tree.DecisionTreeClassifier(**best_params)
+    model = model.fit(X_train, y_train)
 
-y_pred = model.predict(X_test) # Make predictions on the test set
-metrics = {
-        "accuracy": accuracy_score(y_test, y_pred),
-        "precision": precision_score(y_test, y_pred, average="weighted"), 
-        "recall": recall_score(y_test, y_pred, average="weighted"),
-        "f1_score": f1_score(y_test, y_pred, average='weighted'),
-    }
-mlflow.log_metrics(metrics) # Log evaluation metrics to MLflow
-   
-signature = infer_signature(X_train, model.predict(X_train)) # Infer model signature for input and output schema
     
-mlflow.sklearn.log_model(
-    sk_model=model,
-    name= "decision_tree_model", 
-    signature = signature) 
-# Log the trained model to MLflow
-
-
-print("Metrics logged to MLflow:")
-print(metrics)
-
+    print(f"Best parameters: {grid_search.best_params_}")
+    print(f"Best cross-validation score: {grid_search.best_score_:.3f}")
+    print(f"Test score: {best_score:.3f}")
