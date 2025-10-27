@@ -17,6 +17,14 @@ mlruns/0/**/metrics/training_precision_score
 mlruns/0/**/metrics/training_recall_score
 mlruns/0/**/metrics/training_roc_auc
 mlruns/0/**/metrics/training_score
+mlruns/0/**/metrics/best_cv_score
+mlruns/0/**/metrics/mean_fit_time
+mlruns/0/**/metrics/mean_score_time
+mlruns/0/**/metrics/mean_test_score
+mlruns/0/**/metrics/std_fit_time
+mlruns/0/**/metrics/std_score_time
+mlruns/0/**/metrics/std_test_score
+mlruns/0/**/metrics/rank_test_score
 
 mlruns/0/**[!models]/params
 
