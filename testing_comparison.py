@@ -33,7 +33,7 @@ y_train =   y[y.set_train == True]
 y_test =    y[y.set_val == True]
 
 param_grid = {
-    'criterion': ['gini', 'entropy'],
+    'criterion': ['log_loss'],
     'max_depth': [None, 10, 20, 30],
     'min_samples_split': [2, 5, 10],
     'min_samples_leaf': [1, 2, 4],
