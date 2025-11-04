@@ -22,12 +22,10 @@ patient_data['px'] = patient_data['px'].astype(float) # convert psa to float
 X = pd.get_dummies(patient_data.drop("label", axis=1)) # dummies for categorical variables since DecisionTree doesn't handle them directly
 y = pd.get_dummies(patient_data.drop(columns=["age", "staging", "px", "psa"])) # Features and target variable
 
-#X_train, X_test, y_train, y_test =train_test_split(X, y, test_size=0.2, random_state=42)  (#random_state for reproducibility, same split)
-
-X_train =   X[X.set_train == True]
-X_test =    X[X.set_val == True]
-y_train =   y[y.set_train == True]
-y_test =    y[y.set_val == True]
+X_train = X[X.set_train == True]
+X_test = X[X.set_val == True]
+y_train = y[y.set_train == True]
+y_test = y[y.set_val == True]
 
 # Dropping the set indicator columns after the split
 X_train = X_train.drop(columns=['set_train', 'set_val']) # Drop the set indicator columns
@@ -35,35 +33,47 @@ X_test = X_test.drop(columns=['set_train', 'set_val']) # Drop the set indicator 
 y_test = y_test.drop(columns=['set_train', 'set_val']) # Drop the set indicator columns
 y_train = y_train.drop(columns=['set_train', 'set_val']) # Drop the set indicator columns
 y_test = np.array(y_test).astype(str) # Convert y_test to a NumPy array of strings
-y_train = np.array(y_train).astype(str) # Convert y_train to a NumPy
+y_train = np.array(y_train).astype(str) # Convert y_train to a NumPy array of strings
+#y_train = y_train.flatten() # flatten both as sklearn expects 1D array for y
+#y_test = y_test.flatten()
 
-with mlflow.start_run(): # Start an MLflow run to log parameters, metrics, and the model
-   forest_params = {
-    "min_weight_fraction_leaf": 0.1,
-    "n_estimators": 20,
-}
-mlflow.log_params(forest_params) # Log model parameters to MLflow
-model = RandomForestClassifier(**forest_params) # Initialize the random forest with specified parameters
-model = model.fit(X_train, y_train)
-
-y_pred = model.predict(X_test) # Make predictions on the test set
-metrics = {
-        "accuracy": accuracy_score(y_test, y_pred),
-        "precision": precision_score(y_test, y_pred, average="weighted"), 
-        "recall": recall_score(y_test, y_pred, average="weighted"),
-        "f1_score": f1_score(y_test, y_pred, average='weighted'),
-    }
-mlflow.log_metrics(metrics) # Log evaluation metrics to MLflow
-   
-signature = infer_signature(X_train, model.predict(X_train)) # Infer model signature for input and output schema
+with mlflow.start_run() as run:  # Everything inside this block is logged
+    print("✅ MLflow run started successfully!")
+    print(f"Run ID: {run.info.run_id}")
+    print(f"Experiment ID: {run.info.experiment_id}")
+    print(f"MLflow tracking URI: {mlflow.get_tracking_uri()}")   
     
-mlflow.sklearn.log_model(
-    sk_model=model,
-    name= "Random_forest_model", 
-    signature = signature) 
-# Log the trained model to MLflow
+    forest_params = {
+        "min_weight_fraction_leaf": 0.1,
+        "n_estimators": 20,
+    }
+
+    # Log parameters
+    mlflow.log_params(forest_params)
+
+    # Train model
+    model = RandomForestClassifier(**forest_params)
+    model = model.fit(X_train, y_train)
+
+    # Evaluate
+    y_pred = model.predict(X_test)
+    metrics = {
+        "accuracy": accuracy_score(y_test, y_pred),
+        "precision": precision_score(y_test, y_pred, average="weighted"),
+        "recall": recall_score(y_test, y_pred, average="weighted"),
+        "f1_score": f1_score(y_test, y_pred, average="weighted"),
+    }
+
+    # Log metrics and model
+    mlflow.log_metrics(metrics)
+    signature = infer_signature(X_train, model.predict(X_train))
+
+    mlflow.sklearn.log_model(
+        sk_model=model,
+        artifact_path="Random_forest_model",
+        signature=signature
+    )
 
 
 print("Metrics logged to MLflow:")
-print(metrics)
-
+print("Classification Report:\n", classification_report(y_test, y_pred))
