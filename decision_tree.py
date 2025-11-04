@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import mlflow
 import mlflow.sklearn
 from mlflow.models import infer_signature
-from sklearn import tree
+from sklearn.ensemble import RandomForestClassifier
 #from sklearn.model_selection import train_test_split #function currently not used
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score  # metrics for manual model eval
 
@@ -38,24 +38,12 @@ y_test = np.array(y_test).astype(str) # Convert y_test to a NumPy array of strin
 y_train = np.array(y_train).astype(str) # Convert y_train to a NumPy
 
 with mlflow.start_run(): # Start an MLflow run to log parameters, metrics, and the model
-   tree_params = {
-    "criterion": "gini",
-    "splitter": "best",
-    "max_depth": None,
-    "min_samples_split": 2,
-    "min_samples_leaf": 1,
-    "min_weight_fraction_leaf": 0.0,
-    "max_features": None,
-    "random_state": None,
-    "max_leaf_nodes": None,
-    "min_impurity_decrease": 0.0,
-    "class_weight": None,
-    "ccp_alpha": 0.0,
-    "monotonic_cst": None,
+   forest_params = {
     "min_weight_fraction_leaf": 0.1,
+    "n_estimators": 20,
 }
-mlflow.log_params(tree_params) # Log model parameters to MLflow
-model = tree.DecisionTreeClassifier(**tree_params) # Initialize the Decision Tree Classifier with specified parameters
+mlflow.log_params(forest_params) # Log model parameters to MLflow
+model = RandomForestClassifier(**forest_params) # Initialize the random forest with specified parameters
 model = model.fit(X_train, y_train)
 
 y_pred = model.predict(X_test) # Make predictions on the test set
@@ -71,7 +59,7 @@ signature = infer_signature(X_train, model.predict(X_train)) # Infer model signa
     
 mlflow.sklearn.log_model(
     sk_model=model,
-    name= "decision_tree_model", 
+    name= "Random_forest_model", 
     signature = signature) 
 # Log the trained model to MLflow
 
