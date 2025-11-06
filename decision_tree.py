@@ -19,9 +19,9 @@ patient_data['age'] = patient_data['age'].astype(float) # convert psa to float
 patient_data['px'] = patient_data['px'].astype(float) # convert psa to float
 
 train_mask = patient_data['set'] == 'train' 
-test_mask = patient_data['set'] == 'val' # splitting train/val before one-hot encoding to avoid data leakage
+test_mask = patient_data['set'] == 'val' # splitting train/val before one-hot encoding 
 
-X = pd.get_dummies(patient_data.drop("label", axis=1)) # dummies for categorical variables since DecisionTree doesn't handle them directly
+X = pd.get_dummies(patient_data.drop("label", axis=1)) # dummies for categorical variables since forest doesn't handle them directly
 y = patient_data[["label"]] # Keeping y as DataFrame for easier handling of set indicators
 
 X_train, y_train = X[train_mask], y[train_mask]
@@ -32,15 +32,23 @@ print(f"Train shape: {X_train.shape} {y_train.shape}") #double check proper set 
 # Dropping the set indicator columns after the split
 X_train = X_train.drop(columns=['set_train', 'set_val']) # Drop the set indicator columns
 X_test = X_test.drop(columns=['set_train', 'set_val']) # Drop the set indicator columns
-y_test = y_test.drop(columns=['set_train', 'set_val']) # Drop the set indicator columns
-y_train = y_train.drop(columns=['set_train', 'set_val']) # Drop the set indicator columns
-y_test = np.array(y_test).astype(str) # Convert y_test to a NumPy array of strings
-y_train = np.array(y_train).astype(str) # Convert y_train to a NumPy array of strings
-#y_train = y_train.flatten() # flatten both as sklearn expects 1D array for y
-#y_test = y_test.flatten()
+
+y_test = np.array(y_test).astype(int) # Convert y_test to a NumPy array of strings
+y_train = np.array(y_train).astype(int) # Convert y_train to a NumPy array of strings
+
+y_test = y_test.squeeze()
+y_train = y_train.squeeze()
+
+#ensure X and y have matching lengths
+if len(X_train) != len(y_train):
+    print("Mismatch between X_train and y_train lengths!")
+    raise SystemExit()
+if len(X_test) != len(y_test):
+    print("Mismatch between X_test and y_test lengths!")
+    raise SystemExit()
 
 with mlflow.start_run() as run:  # Everything inside this block is logged
-    print("✅ MLflow run started successfully!")
+    print("MLflow run started successfully!")
     print(f"Run ID: {run.info.run_id}")
     print(f"Experiment ID: {run.info.experiment_id}")
     print(f"MLflow tracking URI: {mlflow.get_tracking_uri()}")   
@@ -76,6 +84,7 @@ with mlflow.start_run() as run:  # Everything inside this block is logged
         signature=signature
     )
 
+mlflow.end_run()
 
 print("Metrics logged to MLflow:")
 print("Classification Report:\n", classification_report(y_test, y_pred))
