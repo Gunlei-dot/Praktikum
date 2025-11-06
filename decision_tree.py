@@ -10,22 +10,24 @@ from sklearn.metrics import classification_report, confusion_matrix, accuracy_sc
 
 patient_data = pd.read_csv(r'C:\Users\s434037\Desktop\Bachelor\projects\labels.tsv', encoding='utf-8', sep='\t') #encoding and sep to read tsv correctly
 patient_data = patient_data.dropna() # Drop rows with missing values for simplicity 
-patient_data = patient_data.drop(columns=['pseudo_id']) # Drop patient_id as it's not a feature for prediction
-patient_data = patient_data.drop(columns=['sex']) # Drop sex as it's not a feature for prediction
-patient_data = patient_data.drop(columns=['pseudo_patid']) # Drop pst_id as it's not a feature for prediction
+patient_data = patient_data.drop(columns=['pseudo_id', 'sex', 'pseudo_patid']) # Drop patient_id as it's not a feature for prediction
 patient_data = patient_data[patient_data.label != 2] # Remove rows with label 2 as these are not relevant for binary classification
 patient_data = patient_data[patient_data.psa != 'NA'] # remove rows with no psa value till i find a better solution
 patient_data = patient_data[patient_data.staging != 'primary'] # remove rows with primary staging till i find a better solution
+
 patient_data['age'] = patient_data['age'].astype(float) # convert psa to float
 patient_data['px'] = patient_data['px'].astype(float) # convert psa to float
 
-X = pd.get_dummies(patient_data.drop("label", axis=1)) # dummies for categorical variables since DecisionTree doesn't handle them directly
-y = pd.get_dummies(patient_data.drop(columns=["age", "staging", "px", "psa"])) # Features and target variable
+train_mask = patient_data['set'] == 'train' 
+test_mask = patient_data['set'] == 'val' # splitting train/val before one-hot encoding to avoid data leakage
 
-X_train = X[X.set_train == True]
-X_test = X[X.set_val == True]
-y_train = y[y.set_train == True]
-y_test = y[y.set_val == True]
+X = pd.get_dummies(patient_data.drop("label", axis=1)) # dummies for categorical variables since DecisionTree doesn't handle them directly
+y = patient_data[["label"]] # Keeping y as DataFrame for easier handling of set indicators
+
+X_train, y_train = X[train_mask], y[train_mask]
+X_test, y_test = X[test_mask], y[test_mask]
+
+print(f"Train shape: {X_train.shape} {y_train.shape}") #double check proper set splits
 
 # Dropping the set indicator columns after the split
 X_train = X_train.drop(columns=['set_train', 'set_val']) # Drop the set indicator columns
