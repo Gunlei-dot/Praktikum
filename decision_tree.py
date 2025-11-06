@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import mlflow
 import mlflow.sklearn
+import traceback
 from mlflow.models import infer_signature
 from sklearn.ensemble import RandomForestClassifier
 #from sklearn.model_selection import train_test_split #function currently not used
@@ -22,7 +23,8 @@ train_mask = patient_data['set'] == 'train'
 test_mask = patient_data['set'] == 'val' # splitting train/val before one-hot encoding 
 
 X = pd.get_dummies(patient_data.drop("label", axis=1)) # dummies for categorical variables since forest doesn't handle them directly
-y = patient_data[["label"]] # Keeping y as DataFrame for easier handling of set indicators
+X.index = patient_data.index # keep original indices for proper splitting later
+y = patient_data["label"].astype(int) # Keeping y as DataFrame for easier handling of set indicators
 
 X_train, y_train = X[train_mask], y[train_mask]
 X_test, y_test = X[test_mask], y[test_mask]
@@ -30,8 +32,8 @@ X_test, y_test = X[test_mask], y[test_mask]
 print(f"Train shape: {X_train.shape} {y_train.shape}") #double check proper set splits
 
 # Dropping the set indicator columns after the split
-X_train = X_train.drop(columns=['set_train', 'set_val']) # Drop the set indicator columns
-X_test = X_test.drop(columns=['set_train', 'set_val']) # Drop the set indicator columns
+X_train = X_train.drop(columns=['set_train', 'set_val'], errors= 'ignore') # Drop the set indicator columns
+X_test = X_test.drop(columns=['set_train', 'set_val'], errors = 'ignore') # Drop the set indicator columns
 
 y_test = np.array(y_test).astype(int) # Convert y_test to a NumPy array of strings
 y_train = np.array(y_train).astype(int) # Convert y_train to a NumPy array of strings
@@ -47,44 +49,53 @@ if len(X_test) != len(y_test):
     print("Mismatch between X_test and y_test lengths!")
     raise SystemExit()
 
-with mlflow.start_run() as run:  # Everything inside this block is logged
-    print("MLflow run started successfully!")
-    print(f"Run ID: {run.info.run_id}")
-    print(f"Experiment ID: {run.info.experiment_id}")
-    print(f"MLflow tracking URI: {mlflow.get_tracking_uri()}")   
-    
-    forest_params = {
-        "min_weight_fraction_leaf": 0.1,
-        "n_estimators": 20,
-    }
+print("Train shape:", X_train.shape, "Test shape:", X_test.shape)
+print("Unique labels:", np.unique(y_train))
 
-    # Log parameters
-    mlflow.log_params(forest_params)
+try:
+    with mlflow.start_run() as run:  # Everything inside this block is logged
+        print("MLflow run started successfully!")
+        print(f"Run ID: {run.info.run_id}")
+        print(f"Experiment ID: {run.info.experiment_id}")
+        print(f"MLflow tracking URI: {mlflow.get_tracking_uri()}")   
+        
+        forest_params = {
+            "min_weight_fraction_leaf": 0.1,
+            "n_estimators": 20,
+        }
 
-    # Train model
-    model = RandomForestClassifier(**forest_params)
-    model = model.fit(X_train, y_train)
+        # Log parameters
+        mlflow.log_params(forest_params)
 
-    # Evaluate
-    y_pred = model.predict(X_test)
-    metrics = {
-        "accuracy": accuracy_score(y_test, y_pred),
-        "precision": precision_score(y_test, y_pred, average="weighted"),
-        "recall": recall_score(y_test, y_pred, average="weighted"),
-        "f1_score": f1_score(y_test, y_pred, average="weighted"),
-    }
+        # Train model
+        model = RandomForestClassifier(**forest_params)
+        model = model.fit(X_train, y_train)
 
-    # Log metrics and model
-    mlflow.log_metrics(metrics)
-    signature = infer_signature(X_train, model.predict(X_train))
+        # Evaluate
+        y_pred = model.predict(X_test)
+        metrics = {
+            "accuracy": accuracy_score(y_test, y_pred),
+            "precision": precision_score(y_test, y_pred, average="weighted"),
+            "recall": recall_score(y_test, y_pred, average="weighted"),
+            "f1_score": f1_score(y_test, y_pred, average="weighted"),
+        }
 
-    mlflow.sklearn.log_model(
-        sk_model=model,
-        artifact_path="Random_forest_model",
-        signature=signature
-    )
+        # Log metrics and model
+        mlflow.log_metrics(metrics)
+        signature = infer_signature(X_train, model.predict(X_train))
 
-mlflow.end_run()
+        mlflow.sklearn.log_model(
+            sk_model=model,
+            artifact_path="Random_forest_model",
+            signature=signature
+        )
 
+    mlflow.end_run()
+
+except Exception as e:
+    print("An error occurred during the MLflow run:")
+    traceback.print_exc()
+    mlflow.end_run()
+    raise
 print("Metrics logged to MLflow:")
 print("Classification Report:\n", classification_report(y_test, y_pred))
