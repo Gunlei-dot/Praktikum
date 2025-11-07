@@ -6,6 +6,7 @@ mlruns/**/tags/
 mlruns/**/meta.yaml
 mlruns/**/inputs/
 mlruns/datasets
+!mlruns/0/meta.yaml
 
 mlruns/0/**[!models]/metrics
 mlruns/0/**/metrics/DecisionTreeClassifier_score_X_train

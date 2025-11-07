@@ -86,7 +86,7 @@ try:
 
         mlflow.sklearn.log_model(
             sk_model=model,
-            artifact_path="Random_forest_model",
+            name="Random_forest_model",
             signature=signature
         )
 
