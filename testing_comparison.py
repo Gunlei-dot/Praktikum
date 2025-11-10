@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import mlflow
 import mlflow.sklearn
+import traceback
 from mlflow.models import infer_signature
 from sklearn import tree
 from sklearn.ensemble import RandomForestClassifier
@@ -12,7 +13,7 @@ from sklearn.metrics import classification_report, confusion_matrix, accuracy_sc
 from sklearn.model_selection import cross_val_score
 
 
-'mlflow.sklearn.autolog()'
+mlflow.sklearn.autolog(max_tuning_runs=5)
 
 patient_data = pd.read_csv(r'C:\Users\s434037\Desktop\Bachelor\projects\labels.tsv', encoding='utf-8', sep='\t') #encoding and sep to read tsv correctly
 patient_data = patient_data.dropna() # Drop rows with missing values for simplicity 
@@ -68,23 +69,33 @@ y_train = y_train.squeeze() # sections sets up train test split and ensures prop
 
 param_grid = {
     'min_samples_split': [2, 3, 4],
-    'min_weight_fraction_leaf': [0.1],
+    'min_weight_fraction_leaf': [0.0, 0.01, 0.1],
     'min_impurity_decrease': [0.0, 0.01, 0.1],
     'max_leaf_nodes': [None, 10, 20],
 }
 
 # Dropping the set indicator columns after the split
+try:
+    with mlflow.start_run(run_name='random_forest_param_tuning',experiment_id= 'parameter_tuning' ) as run: # Start an MLflow run to log parameters, metrics, and the model   
+        print("MLflow run started successfully!")
+        print(f"Run ID: {run.info.run_id}")
+        print(f"Experiment ID: {run.info.experiment_id}")
+        print(f"MLflow tracking URI: {mlflow.get_tracking_uri()}")
+        
+        rf_classifier = RandomForestClassifier(random_state=42)
+        grid_search = GridSearchCV(estimator=rf_classifier, param_grid=param_grid, cv=5, n_jobs=-1, scoring='f1', error_score='raise')
+        grid_search.fit(X_train, y_train)
+        best_params = grid_search.best_params_
+        best_score = grid_search.best_score_
+        model = RandomForestClassifier(**best_params)
+        model = model.fit(X_train, y_train)
+    mlflow.end_run()  
 
-with mlflow.start_run(run_name='random_forest_param_tuning'): # Start an MLflow run to log parameters, metrics, and the model
-    rf_classifier = RandomForestClassifier(random_state=42)
-    grid_search = GridSearchCV(estimator=rf_classifier, param_grid=param_grid, cv=5, n_jobs=-1, scoring='f1', error_score='raise')
-    grid_search.fit(X_train, y_train)
-    best_params = grid_search.best_params_
-    best_score = grid_search.best_score_
-    model = RandomForestClassifier(**best_params)
-    model = model.fit(X_train, y_train)
-
-    
+except Exception as e:
+    print("An error occurred during the MLflow run:")
+    traceback.print_exc()
+    mlflow.end_run()
+    raise
 print(f"Best parameters: {grid_search.best_params_}")
 print(f"Best cross-validation score: {grid_search.best_score_:.3f}")
 print(f"Test score: {best_score:.3f}")
