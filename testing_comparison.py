@@ -69,8 +69,9 @@ y_test = y_test.squeeze()
 y_train = y_train.squeeze() # sections sets up train test split and ensures proper data types
 
 param_grid = {
-    "min_weight_fraction_leaf": 0.1,
-    "n_estimators": 20,
+    "min_weight_fraction_leaf": [0.1],
+    "n_estimators": [20],
+    'random_state': [42],
     "max_depth": [None, 10, 20, 30],
     "ccp_alpha": [0.0, 0.005, 0.01, 0.0015],
 }
