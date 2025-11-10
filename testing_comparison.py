@@ -14,6 +14,7 @@ from sklearn.model_selection import cross_val_score
 
 
 mlflow.sklearn.autolog(max_tuning_runs=5)
+mlflow.set_experiment("Random_Forest_parameter_tuning")
 
 patient_data = pd.read_csv(r'C:\Users\s434037\Desktop\Bachelor\projects\labels.tsv', encoding='utf-8', sep='\t') #encoding and sep to read tsv correctly
 patient_data = patient_data.dropna() # Drop rows with missing values for simplicity 
@@ -68,15 +69,15 @@ y_test = y_test.squeeze()
 y_train = y_train.squeeze() # sections sets up train test split and ensures proper data types
 
 param_grid = {
-    'min_samples_split': [2, 3, 4],
-    'min_weight_fraction_leaf': [0.0, 0.01, 0.1],
-    'min_impurity_decrease': [0.0, 0.01, 0.1],
-    'max_leaf_nodes': [None, 10, 20],
+    "min_weight_fraction_leaf": 0.1,
+    "n_estimators": 20,
+    "max_depth": [None, 10, 20, 30],
+    "ccp_alpha": [0.0, 0.005, 0.01, 0.0015],
 }
 
 # Dropping the set indicator columns after the split
 try:
-    with mlflow.start_run(run_name='random_forest_param_tuning',experiment_id= 'parameter_tuning' ) as run: # Start an MLflow run to log parameters, metrics, and the model   
+    with mlflow.start_run(run_name='random_forest_param_tuning') as run: # Start an MLflow run to log parameters, metrics, and the model   
         print("MLflow run started successfully!")
         print(f"Run ID: {run.info.run_id}")
         print(f"Experiment ID: {run.info.experiment_id}")
@@ -96,6 +97,7 @@ except Exception as e:
     traceback.print_exc()
     mlflow.end_run()
     raise
+
 print(f"Best parameters: {grid_search.best_params_}")
 print(f"Best cross-validation score: {grid_search.best_score_:.3f}")
 print(f"Test score: {best_score:.3f}")
