@@ -4,7 +4,7 @@ mlruns/**/artifacts/
 mlruns/**/outputs/
 mlruns/**/tags/
 mlruns/**/inputs/
-mlruns/**/datasets/
+mlruns/**/datasets
 mlruns/**/meta.yaml
 
 mlruns/**[!models]/metrics
