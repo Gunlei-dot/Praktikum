@@ -6,7 +6,7 @@ import mlflow.sklearn
 import traceback
 from mlflow.models import infer_signature
 from sklearn.ensemble import RandomForestClassifier
-#from sklearn.model_selection import train_test_split #function currently not used
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score  # metrics for manual model eval
 
 patient_data = pd.read_csv(r'C:\Users\s434037\Desktop\Bachelor\projects\labels.tsv', encoding='utf-8', sep='\t') #encoding and sep to read tsv correctly
@@ -52,6 +52,8 @@ if len(X_test) != len(y_test):
 print("Train shape:", X_train.shape, "Test shape:", X_test.shape)
 print("Unique labels:", np.unique(y_train))
 
+mlflow.set_experiment("XGboost_training_experiment")
+
 try:
     with mlflow.start_run() as run:  # Everything inside this block is logged
         print("MLflow run started successfully!")
@@ -59,16 +61,15 @@ try:
         print(f"Experiment ID: {run.info.experiment_id}")
         print(f"MLflow tracking URI: {mlflow.get_tracking_uri()}")   
         
-        forest_params = {
-            "min_weight_fraction_leaf": 0.1,
-            "n_estimators": 20,
+        boost_params = {
+            # first run with default settings
         }
 
         # Log parameters
-        mlflow.log_params(forest_params)
+        mlflow.log_params(boost_params)
 
         # Train model
-        model = RandomForestClassifier(**forest_params)
+        model = GradientBoostingClassifier(**boost_params)
         model = model.fit(X_train, y_train)
 
         # Evaluate
@@ -86,7 +87,7 @@ try:
 
         mlflow.sklearn.log_model(
             sk_model=model,
-            name="Random_forest_model",
+            name="default_xg_boost",
             signature=signature
         )
 
@@ -97,5 +98,6 @@ except Exception as e:
     traceback.print_exc()
     mlflow.end_run()
     raise
+
 print("Metrics logged to MLflow:")
 print("Classification Report:\n", classification_report(y_test, y_pred))
