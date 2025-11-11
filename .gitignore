@@ -29,7 +29,6 @@ mlruns/**/metrics/std_test_score
 mlruns/**/metrics/rank_test_score
 
 mlruns/0/**[!models]/params
-mlruns/**/params/warm_start
 mlruns/914487638670546333/**/params/
-
 mlruns/914487638670546333/runs
+mlruns/0/
