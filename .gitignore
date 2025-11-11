@@ -4,7 +4,7 @@ mlruns/**/artifacts/
 mlruns/**/outputs/
 mlruns/**/tags/
 mlruns/**/inputs/
-mlruns/datasets
+mlruns/**/datasets
 
 
 mlruns/0/**[!models]/metrics
@@ -29,5 +29,4 @@ mlruns/0/**/metrics/rank_test_score
 
 mlruns/0/**[!models]/params
 mlruns/914487638670546333/**/params/
-mlruns/914487638670546333/runs
-mlruns/0/runs
+mlruns/**/runs
