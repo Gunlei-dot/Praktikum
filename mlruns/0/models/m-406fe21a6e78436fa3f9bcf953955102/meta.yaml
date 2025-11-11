@@ -1,0 +1,10 @@
+artifact_location: file:///C:/Users/s434037/Desktop/Bachelor/projects/mlruns/0/models/m-406fe21a6e78436fa3f9bcf953955102/artifacts
+creation_timestamp: 1762252538945
+experiment_id: '0'
+last_updated_timestamp: 1762252548320
+model_id: m-406fe21a6e78436fa3f9bcf953955102
+model_type: null
+name: Random_forest_model
+source_run_id: 5dbfe74298974a75adeaf26f56bd9c61
+status: 2
+status_message: null
