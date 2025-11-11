@@ -91,6 +91,9 @@ try:
         best_score = grid_search.best_score_
         model = RandomForestClassifier(**best_params)
         model = model.fit(X_train, y_train)
+    # do manual parameter tracking so only the important bits are saved, reduce to the best estimator per run
+        
+
     mlflow.end_run()  
 
 except Exception as e:
