@@ -1,0 +1,10 @@
+artifact_location: file:///C:/Users/s434037/Desktop/Bachelor/projects/mlruns/0/models/m-ef07d7e78d5a42128ebb6fadaae49b70/artifacts
+creation_timestamp: 1761215053974
+experiment_id: '0'
+last_updated_timestamp: 1761215057234
+model_id: m-ef07d7e78d5a42128ebb6fadaae49b70
+model_type: null
+name: best_estimator
+source_run_id: 2c9723a7441543ac8287a38f79a6886e
+status: 2
+status_message: null

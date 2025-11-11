@@ -1,0 +1,9 @@
+digest: 8c4753d1
+name: dataset
+profile: '{"num_rows": 706, "num_elements": 2824}'
+schema: '{"mlflow_colspec": [{"type": "long", "name": "age", "required": true}, {"type":
+  "long", "name": "px", "required": true}, {"type": "double", "name": "psa", "required":
+  true}, {"type": "boolean", "name": "staging_re", "required": true}]}'
+source: '{"tags": {"mlflow.user": "s434037", "mlflow.source.name": "c:/Users/s434037/Desktop/Bachelor/projects/testing.py",
+  "mlflow.source.type": "LOCAL", "mlflow.source.git.commit": "646731d0cb755a8619f9289d67c67b836275bd36"}}'
+source_type: code

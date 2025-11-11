@@ -1,0 +1,9 @@
+digest: 051d77cf
+name: dataset
+profile: '{"num_rows": 697, "num_elements": 2788}'
+schema: '{"mlflow_colspec": [{"type": "double", "name": "age", "required": true},
+  {"type": "double", "name": "px", "required": true}, {"type": "double", "name": "psa",
+  "required": true}, {"type": "boolean", "name": "staging_re", "required": true}]}'
+source: '{"tags": {"mlflow.user": "s434037", "mlflow.source.name": "c:/Users/s434037/Desktop/Bachelor/projects/testing_comparison.py",
+  "mlflow.source.type": "LOCAL", "mlflow.source.git.commit": "166bbac32bbf4b877a6c2aace96f7b7621021cfb"}}'
+source_type: code
