@@ -1,0 +1,1 @@
+{'min_weight_fraction_leaf': [0.1], 'n_estimators': [20], 'max_depth': [None, 10, 20, 30], 'ccp_alpha': [0.0, 0.005, 0.01, 0.0015]}

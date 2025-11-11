@@ -5,7 +5,7 @@ mlruns/**/outputs/
 mlruns/**/tags/
 mlruns/**/inputs/
 mlruns/**/datasets
-mlruns/**/meta.yaml
+mlruns/**/**/meta.yaml
 
 mlruns/**[!models]/metrics
 mlruns/**[!models]/meta.yaml
@@ -28,5 +28,5 @@ mlruns/0/**/metrics/std_test_score
 mlruns/0/**/metrics/rank_test_score
 
 mlruns/0/**[!models]/params
-mlruns/914487638670546333/**/params/
+
 mlruns/**/runs
