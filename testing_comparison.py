@@ -14,7 +14,7 @@ from sklearn.ensemble import GradientBoostingClassifier
 
 
 
-mlflow.sklearn.autolog()
+mlflow.sklearn.autolog(max_tuning_runs=1)
 mlflow.set_experiment("XGboost_parameter_tuning")
 
 patient_data = pd.read_csv(r'C:\Users\s434037\Desktop\Bachelor\projects\labels.tsv', encoding='utf-8', sep='\t') #encoding and sep to read tsv correctly
@@ -34,28 +34,6 @@ X = pd.get_dummies(patient_data.drop("label", axis=1)) # dummies for categorical
 X.index = patient_data.index
 y = patient_data[["label"]].astype(int) # Keeping y as DataFrame for easier handling of set indicators
 
-'''forest_params = {
-    "criterion": "gini",
-    "splitter": "best",
-    "max_depth": None,
-    "min_samples_split": 2,
-    "min_samples_leaf": 1,
-    "min_weight_fraction_leaf": 0.0,
-    "max_features": None,
-    "random_state": None,
-    "max_leaf_nodes": None,
-    "min_impurity_decrease": 0.0,
-    "class_weight": None,
-    "ccp_alpha": 0.0,
-    "monotonic_cst": None,
-    "min_weight_fraction_leaf": 0.1,
-                }
-
-
-tree_test = tree.DecisionTreeClassifier(**tree_params)
-
-scores = cross_val_score(tree_test, X, y, cv=5)
-print(f"Cross-validation scores: {scores}")''' # section used for testing cross validation before implementing grid search
 
 X_train, y_train = X[train_mask], y[train_mask]
 X_test, y_test = X[test_mask], y[test_mask]
@@ -71,11 +49,6 @@ y_train = y_train.squeeze() # sections sets up train test split and ensures prop
 
 param_grid = {
     'random_state': [42],
-    'n_estimators': [20, 100],
-    'max_depth': [3, 20],
-    'min_weight_fraction': [0.0, 0.1],
-    'subsample':[0.5, 0.8, 1],
-    'ccp_alpha': [0, 0.001]
 }
 
 # Dropping the set indicator columns after the split
@@ -91,9 +64,12 @@ try:
         grid_search.fit(X_train, y_train)
         best_params = grid_search.best_params_
         best_score = grid_search.best_score_
+
         model = GradientBoostingClassifier(**best_params)
         model = model.fit(X_train, y_train)
-    # do manual parameter tracking so only the important bits are saved, reduce to the best estimator per run
+        
+         # do manual parameter tracking so only the important bits are saved, reduce to the best estimator per run
+        
         y_pred = model.predict(X_test)
         metrics = {
             "accuracy": accuracy_score(y_test, y_pred),
@@ -102,7 +78,6 @@ try:
             "f1_score": f1_score(y_test, y_pred, average="weighted"),
         }
 
-        #mlflow.log_metrics(metrics)
 
     mlflow.end_run()  
 
