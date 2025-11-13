@@ -15,11 +15,14 @@ from sklearn.ensemble import GradientBoostingClassifier
 
 
 mlflow.sklearn.autolog(max_tuning_runs=1)
-mlflow.set_experiment("XGboost_parameter_tuning")
+mlflow.set_experiment("_parameter_tuning")
 
-patient_data = pd.read_csv(r'C:\Users\s434037\Desktop\Bachelor\projects\labels.tsv', encoding='utf-8', sep='\t') #encoding and sep to read tsv correctly
+tsv1 = pd.read_csv(r'C:\Users\s434037\Desktop\Bachelor\data\labels.tsv', encoding='utf-8', sep='\t') #encoding and sep to read tsv correctly
+tsv2 = pd.read_csv(r'C:\Users\s434037\Desktop\Bachelor\data\prostate_stats.tsv', encoding='utf-8', sep='\t') #encoding and sep to read tsv correctly
+
+patient_data = pd.merge(tsv1, tsv2, left_index=True, right_index=True)
 patient_data = patient_data.dropna() # Drop rows with missing values for simplicity 
-patient_data = patient_data.drop(columns=['pseudo_id', 'sex', 'pseudo_patid']) # Drop patient_id as it's not a feature for prediction
+patient_data = patient_data.drop(columns=['pseudo_id', 'sex', 'pseudo_patid', 'pid', 'cx_px', 'cy_px', 'cz_px', 'cx', 'cy', 'cz']) # Drop patient_id as it's not a feature for prediction
 patient_data = patient_data[patient_data.label != 2] # Remove rows with label 2 as these are not relevant for binary classification
 patient_data = patient_data[patient_data.psa != 'NA'] # remove rows with no psa value till i find a better solution
 patient_data = patient_data[patient_data.staging != 'primary'] # remove rows with primary staging till i find a better solution
@@ -53,7 +56,7 @@ param_grid = {
 
 # Dropping the set indicator columns after the split
 try:
-    with mlflow.start_run(run_name='xg_boost_param_tuning') as run: # Start an MLflow run to log parameters, metrics, and the model   
+    with mlflow.start_run(run_name='_param_tuning') as run: # Start an MLflow run to log parameters, metrics, and the model   
         print("MLflow run started successfully!")
         print(f"Run ID: {run.info.run_id}")
         print(f"Experiment ID: {run.info.experiment_id}")
