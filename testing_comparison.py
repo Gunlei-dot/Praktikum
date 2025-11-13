@@ -8,13 +8,14 @@ from mlflow.models import infer_signature
 from sklearn import tree
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
-#from sklearn.model_selection import train_test_split #function currently not used
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score  # metrics for manual model eval
 from sklearn.model_selection import cross_val_score
+from sklearn.ensemble import GradientBoostingClassifier
 
 
-mlflow.sklearn.autolog(max_tuning_runs=5)
-mlflow.set_experiment("Random_Forest_parameter_tuning")
+
+mlflow.sklearn.autolog()
+mlflow.set_experiment("XGboost_parameter_tuning")
 
 patient_data = pd.read_csv(r'C:\Users\s434037\Desktop\Bachelor\projects\labels.tsv', encoding='utf-8', sep='\t') #encoding and sep to read tsv correctly
 patient_data = patient_data.dropna() # Drop rows with missing values for simplicity 
@@ -69,30 +70,39 @@ y_test = y_test.squeeze()
 y_train = y_train.squeeze() # sections sets up train test split and ensures proper data types
 
 param_grid = {
-    "min_weight_fraction_leaf": [0.1],
-    "n_estimators": [20],
     'random_state': [42],
-    "max_depth": [None, 10, 20, 30],
-    "ccp_alpha": [0.0, 0.005, 0.01, 0.0015],
+    'n_estimators': [20, 100],
+    'max_depth': [3, 20],
+    'min_weight_fraction': [0.0, 0.1],
+    'subsample':[0.5, 0.8, 1],
+    'ccp_alpha': [0, 0.001]
 }
 
 # Dropping the set indicator columns after the split
 try:
-    with mlflow.start_run(run_name='random_forest_param_tuning') as run: # Start an MLflow run to log parameters, metrics, and the model   
+    with mlflow.start_run(run_name='xg_boost_param_tuning') as run: # Start an MLflow run to log parameters, metrics, and the model   
         print("MLflow run started successfully!")
         print(f"Run ID: {run.info.run_id}")
         print(f"Experiment ID: {run.info.experiment_id}")
         print(f"MLflow tracking URI: {mlflow.get_tracking_uri()}")
         
-        rf_classifier = RandomForestClassifier(random_state=42)
+        rf_classifier = GradientBoostingClassifier(random_state=42)
         grid_search = GridSearchCV(estimator=rf_classifier, param_grid=param_grid, cv=5, n_jobs=-1, scoring='f1', error_score='raise')
         grid_search.fit(X_train, y_train)
         best_params = grid_search.best_params_
         best_score = grid_search.best_score_
-        model = RandomForestClassifier(**best_params)
+        model = GradientBoostingClassifier(**best_params)
         model = model.fit(X_train, y_train)
     # do manual parameter tracking so only the important bits are saved, reduce to the best estimator per run
-        
+        y_pred = model.predict(X_test)
+        metrics = {
+            "accuracy": accuracy_score(y_test, y_pred),
+            "precision": precision_score(y_test, y_pred, average="weighted"),
+            "recall": recall_score(y_test, y_pred, average="weighted"),
+            "f1_score": f1_score(y_test, y_pred, average="weighted"),
+        }
+
+        #mlflow.log_metrics(metrics)
 
     mlflow.end_run()  
 
@@ -105,3 +115,4 @@ except Exception as e:
 print(f"Best parameters: {grid_search.best_params_}")
 print(f"Best cross-validation score: {grid_search.best_score_:.3f}")
 print(f"Test score: {best_score:.3f}")
+print("Classification Report:\n", classification_report(y_test, y_pred))

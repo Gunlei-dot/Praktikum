@@ -62,7 +62,8 @@ try:
         print(f"MLflow tracking URI: {mlflow.get_tracking_uri()}")   
         
         boost_params = {
-            # first run with default settings
+            'random_state' : 42,
+            
         }
 
         # Log parameters
@@ -87,7 +88,7 @@ try:
 
         mlflow.sklearn.log_model(
             sk_model=model,
-            name="default_xg_boost",
+            name="state42_xg_boost",
             signature=signature
         )
 
