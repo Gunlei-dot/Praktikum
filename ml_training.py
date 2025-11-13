@@ -9,9 +9,12 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score  # metrics for manual model eval
 
-patient_data = pd.read_csv(r'C:\Users\s434037\Desktop\Bachelor\projects\labels.tsv', encoding='utf-8', sep='\t') #encoding and sep to read tsv correctly
+tsv1 = pd.read_csv(r'C:\Users\s434037\Desktop\Bachelor\data\labels.tsv', encoding='utf-8', sep='\t') #encoding and sep to read tsv correctly
+tsv2 = pd.read_csv(r'C:\Users\s434037\Desktop\Bachelor\data\prostate_stats.tsv', encoding='utf-8', sep='\t') #encoding and sep to read tsv correctly
+
+patient_data = pd.merge(tsv1, tsv2, left_index=True, right_index=True)
 patient_data = patient_data.dropna() # Drop rows with missing values for simplicity 
-patient_data = patient_data.drop(columns=['pseudo_id', 'sex', 'pseudo_patid']) # Drop patient_id as it's not a feature for prediction
+patient_data = patient_data.drop(columns=['pseudo_id', 'sex', 'pseudo_patid', 'pid', 'cx_px', 'cy_px', 'cz_px', 'cx', 'cy', 'cz']) # Drop patient_id as it's not a feature for prediction
 patient_data = patient_data[patient_data.label != 2] # Remove rows with label 2 as these are not relevant for binary classification
 patient_data = patient_data[patient_data.psa != 'NA'] # remove rows with no psa value till i find a better solution
 patient_data = patient_data[patient_data.staging != 'primary'] # remove rows with primary staging till i find a better solution
@@ -52,7 +55,7 @@ if len(X_test) != len(y_test):
 print("Train shape:", X_train.shape, "Test shape:", X_test.shape)
 print("Unique labels:", np.unique(y_train))
 
-mlflow.set_experiment("XGboost_training_experiment")
+mlflow.set_experiment("")
 
 try:
     with mlflow.start_run() as run:  # Everything inside this block is logged
