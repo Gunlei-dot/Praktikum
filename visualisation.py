@@ -4,13 +4,17 @@ import pandas as pd
 import numpy as np
 
 
-patient_data = pd.read_csv(r'C:\Users\s434037\Desktop\Bachelor\projects\labels.tsv', encoding='utf-8', sep='\t')
+tsv1 = pd.read_csv(r'C:\Users\s434037\Desktop\Bachelor\data\labels.tsv', encoding='utf-8', sep='\t') #encoding and sep to read tsv correctly
+tsv2 = pd.read_csv(r'C:\Users\s434037\Desktop\Bachelor\data\prostate_stats.tsv', encoding='utf-8', sep='\t') #encoding and sep to read tsv correctly
+
+patient_data = pd.merge(tsv1, tsv2, left_index=True, right_index=True)
 patient_data = patient_data.dropna() # Drop rows with missing values for simplicity 
-patient_data = patient_data.drop(columns=['pseudo_id', 'sex', 'pseudo_patid', 'set']) # Drop patient_id as it's not a feature for prediction
+patient_data = patient_data.drop(columns=['pseudo_id', 'sex', 'pseudo_patid', 'pid', 'cx_px', 'cy_px', 'cz_px', 'cx', 'cy', 'cz', 'set']) # Drop patient_id as it's not a feature for prediction
 patient_data = patient_data[patient_data.label != 2] # Remove rows with label 2 as these are not relevant for binary classification
 patient_data = patient_data[patient_data.psa != 'NA'] # remove rows with no psa value till i find a better solution
 patient_data = patient_data[patient_data.staging != 'primary'] # remove rows with primary staging till i find a better solution
 patient_data = patient_data.drop(columns=['staging']) # drop staging column after removing primary values
+
 
 
 #p = sns.scatterplot(data=patient_data[patient_data.px == 0], x='age', y='psa', hue='label')
