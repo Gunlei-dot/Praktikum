@@ -1,0 +1,97 @@
+Title: Protocol for "Spezielle Bioinformatik 3" Using basic machine learning to compare against previous deep learning models in detecting Local Prostate Cancer Recurrence from PET/CT Scans.
+
+**Abstract**:
+
+This work focuses on validating or contesting the deep learning approach taken in the paper of M. Korb [[https://www.mdpi.com/2072-6694/17/9/1575]]
+Our goal was to simplify the methodology as much as possible to have a comparative overview over the required data to make a prediction with a certain amount of confidence. 
+For this purpose we started out with simple tabular meta data taken from patients and trained various classical machine learning models on it. This is in comparison to the "top down" approach taken by M. Korb, where they opted to use a convoluted neural network, trained on the image data of the same patients. Making adjustments to said data to improve accuracy. 	
+
+
+**Introduction**:
+
+The goal of this internship is to take a simplified approach to prostate cancer recurrence detection form PET/CT scans, or rather the tabular data derived from patients. 
+To achieve proper documentation as well as holding up a basic scientific standard, trackable version control was required. For this reason learning basic version control via github in a "data carpentry course" was done.
+After this the goal was to have a comprehensive overview across all created models and metrics, for this purpose MLFLOW was used as it offers easy to understand insights and comparison across models, as well as additional version control. As a base for all models the repository scikit-learn was utilised, it offers comprehensive documentation, making it easier to understand and adjust models for our intended use.
+
+**Materials and Methods:**
+
+- Data processing/Study pop
+	The data used for this project was based on the dataset [[labels]].
+	It consists of the meta data obtained
+	Per patient there are two randomised IDs for privacy, age of the patient, gender, whether or not its the primary or restating of said patient, status of prostatectomy px, levels of the PC indicative protein psa, the label (0 = no cancer, 1 = cancer, 2 = uncertain) and the intended set with either training or validation. The actual images were not integrated into the feature selection. At later stages the consideration was made to add derived features from the image data, such as image intensities and potential lesion volumes. Inclusion of the additional features was deemed outside the scope of the initial project and to be looked at in the follow up project.
+
+	The patient data was first simplified as much as possible to introduce as little variables or potential issues as possible. For this, any data containing the label 2, rows containing features with N/A and primary staging patients were excluded. After this, only the relevant features of age, psa and px were left. 
+	
+	Val/Train masks were created and matching was done via the index, to remove both patient IDs. 
+	The overall data was reduced from 1205 viable rows to <mark style="background: #FFB8EBA6;">~1000</mark> rows, with X and Y being removed for the test and the validation set.
+
+
+- Data logging/documentation via GitHub/MLFLOW
+	For version control GitHub was used. To learn how to use git and GitHub a software carpentry course was attended. In this course the first "lesson" was the  concept of version control based on checkpoints, as well as conflict resolution with two differing outputs. After setting up the account and setting the basic text editor, nano in our case, we finished up the config. 
+	The first task was to set up a repository and create basic text files to track and manipulate and inspect these changes. The best practises regarding git commit messages were explained. The concept of the staging area was explained using the example of multiple receipts. While simple in theory, the gitignore file is very important for this project, as we only wanted to track the most important metrics and special care was giving to reviewing the section explaining it in detail. Afterwards a remote repository was created in GitHub, as this project was not being worked on by multiple people, best practises regarding branching and pushing to main were not explored. For this project a trunk based branching path was chosen. 
+
+	When creating and testing various models based on different data subsets, parameters or algorithms, a lot of different models all with specific performance metrics will be created. To not accidentally toss a well performing model or rely on tracking hundreds of small files via GitHub, MLFLOW was introduced. It allowed a fully local storage of any and all models including the specific parameters, metrics and environment they were created in. The tracking for the models is highly customisable and was preferred over the easy to implement automated tracking provided within the documentation. This allowed us to specify to only track the parameters differing from the default parameters, as seen in the documentation of each method in Scikit-learn. The custom parameter tracking allowed for standardised comparison between models by using a confusion matrix involving Accuracy, Recall, Precision and F1 score. These metrics could be visualised in a comprehensive graph view within the locally hosted UI of MLFLOW, allowing for model evaluation and comparison at a glance.
+	The primary issue across the project was adjusting the tracking for the different purposes, as for parameter tuning, not every run is relevant to keep track pf, simply the best one or two parameter configurations. With the initial automated tracking that was implemented just a few simple grid search runs would create around 20 models with very similar outputs, cluttering the graphs, as well as around 200 files for GitHub to keep track of, as the parameters used weren't adjusted for via gitignore yet. 
+	When the tuning was finished, the best performing model of each used algorithm was selected and logged internally. This selection process was possible due to the evaluation function MLFLOW provides, as for some of the initial tuning runs the confusion matrix was not tracked, making it impossible to conclusively compare these models to the manually created ones. The evaluate function provides not only the confusion matrix for each model, but also other insights like a ROC-AUC, providing additional detail with which to select the best performing models. 
+
+- Scikit learn
+	Scikit learn provides all the algorithms used for this Project. For each used algorithm it provides in depth documentation about parameters and attributes used to adjust and analyse and improve the results, as well as a basic explanation of what they do by giving code examples and showing their output. 
+
+- Decision tree
+	The decision tree is a simple, yet powerful model to start of with. It tries to categorise data based on decision splits within the data sets, these splits are referred to as branch, splitting the dataset into notes with a certain purity, the purity of a node reflects the homogeneity of the node. This continues until the tree reaches end nodes, so called "leaves", with maximum purity. A leaf with a purity of 1 contains only one specific result or label. 
+
+	This method of looking for a pattern leading to the purest leaf often leaves to overfitting. That is, it will be specialised on the seen data, as it accounts for all the noise or outliers and achieve good results in training with near-perfect accuracy, but struggle to handle previously unseen data. 
+	
+	For this reason, a method called "pruning" is used to tackle the issue. By adjusting certain parameters in the decision tree function, provided by scikit-learn, we can ensure that the tree doesnt develop too many leaves, "cut" off the ones that do not impact the final score too much and are most likely based on noise, or ensure that it doesnt branch up to infinity (or until all leaves are homogenous).
+	
+	The specific parameters looked at for Parameter tuning<mark style="background: #FFB8EBA6;"> include:</mark>
+
+| Parameter (value)                | Function                                                                                                                                                     |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Criterion<br>(gini, entropy)     | Measuring the quality of a split based on Gini impurity or shannon information gain***                                                                       |
+| max_depth<br>(int)               | Maximum amount of splits the tree is allowed to make. If none, tree will continue splitting till all leaves are pure, or other parameters prevent splitting. |
+| min_samples_split <br>(int)      | The minimum number of samples required to split a node                                                                                                       |
+| min_samples_leaf <br>(int)       | The minimum number of samples required to be contained within a lea node, forces every split to at least contain (min_number_leaf) on both sides             |
+| min_weight_fraction_leaf (float) | The minimum fraction of samples required at a leaf note, if weight is provided, equal weight is assumed                                                      |
+| random_state <br>(int)           | Choose the seed determining the randomness of the method. Used to ensure replicable results each time.                                                       |
+| max_leaf_nodes <br>(int)         | Grow the best tree using the specified number of leaves. <br>Best tree is determined by elative reduction in impurity                                        |
+| min_impurity_decrease (float)    | Nodes split must decrease impurity by as much or more. Decrease is calculated***                                                                             |
+| ccp_alpha <br>(float)            | Parameter for minimal Cost-Complexity Pruning.<br>Subtree with largest cost complexity smaller than ccp_alpha will be chosen.***                             |
+	Another aspect that was considered for the decision tree is removing the set feature altogether and scrambling the train/validation sets in different ways via k-fold cross validation.
+
+- Random Forest
+	The RandomForestClassifier is a direct continuation of the decision tree, it tried to solve the prominent issue of overfitting a single tree by using a multitude of weaker trees, that come to a conclusion via majority vote. 
+
+	The most important factor for this to work is something called bootstrapping. Training every tree on the exact same data, even accounting for randomness in training and weak learners, will lead to biased/converging trees. Weak learners in this context are decison trees that do not achieve high accuracy, that can be by limiting their depth or heavy pruning. By splitting the training data into smaller subsets, done in a process called "bagging", each tree ends up vastly different from one another. While the individual trees might be overfitting or have a bias, across the entirety of the forest these issues should balance themselves out.
+
+	Two appraches to this we tested were a bigger forest with weak learners as the default approach to this problem. The other approach was using a smaller forest with strong learner trees to see if it could compete with the larger forest. 
+
+- XGBoost
+	The Extreme Gradient Boosting algorithm is also an ensemble method, similar to the random forest and based on decision trees. Originally seen in [[Greedy Function Approximation: A Gradient Boosting Machine, by Friedman]] , this  
+
+- Evaluation (CV/GridSearch/mlflow compare)
+
+
+**Results**
+
+- Classification matrix for each model and train to test comparison
+- Plotting of data vs label
+
+
+**Discussion**
+good at true negatives, bad at true positives
+
+**Conclusion**
+	After testing multiple algorithms with various parameter configurations it seems that despite getting near the performance of the deep learning model used for comparison, but unable to reach the same or better performance in the current setting. 
+	Considering the small amount of data used to train the models there is potential to increase performance by carefully selecting and determining significant image features to enter into training. These results are in line with the expected outcome of the supervisor and show that, while there still is some potential improvements to be had using classical ML methods, 
+	choosing a deep learning model for the initial project was not a bad choice. 
+	
+
+**Appendix**
+
+- Packages
+- Model version differences/full metrics like grid search or kfold
+- code
+- mathematical formulas of parameters
+- github
+- 
