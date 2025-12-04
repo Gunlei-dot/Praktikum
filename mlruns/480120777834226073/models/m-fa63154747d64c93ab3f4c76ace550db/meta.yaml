@@ -1,0 +1,10 @@
+artifact_location: file:///C:/Users/s434037/Desktop/Bachelor/projects/mlruns/480120777834226073/models/m-fa63154747d64c93ab3f4c76ace550db/artifacts
+creation_timestamp: 1763045770437
+experiment_id: '480120777834226073'
+last_updated_timestamp: 1763045773859
+model_id: m-fa63154747d64c93ab3f4c76ace550db
+model_type: null
+name: model
+source_run_id: 95db3e57cf45462ca3d628e0b76ab228
+status: 2
+status_message: null
