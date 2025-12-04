@@ -5,16 +5,16 @@
 ### Background: 
 As by far the most common cancer in <mark style="background: #FF5582A6;">men </mark>, Prostate Cancer (PC) is of great interest for medical research. Of the various established imaging methods PSMA-directed positron emission tomography (PET) has established itself as a reliable method for diagnosing and detecting recurrent PC as well as metastasis. A deep learning model previously trained on [18F]-prostate specific membrane antigen (PSMA)-1007 PET-Scans to detect local PC recurrence serves as a base line. Training another model with classic machine learning methods, on the same dataset, the goal was to see how close in performance we could get with as little data as possible. 
 ### Methods:
-Multiple models based on three different algorithms were trained on the metadata of a dataset including 1404 [18F]-PSMA-1007 PET/CTs from patients with histologically confirmed prostate cancer. From this dataset
-### Conclusion
-
-# **1. Introduction**:
+Multiple models based on three different algorithms were trained on the metadata of a dataset including 1404 [18F]-PSMA-1007 PET/CT re staging scans from patients with histologically confirmed prostate cancer. [[results]]
+### Conclusion:
+In the presented data we show, that using deep learning as the preferred approach for analysing this dataset of 1404 scans was at least better to some degree. As with the highly simplified approach we managed to almost match f1 and accuracy. Which leads to believe that simply the addition of the prostatectomy status has a high degree of influence over prediction result. Data processing and amount may hold back both approaches from achieving clinically relevant models. 
+# **1. Introduction**
 
 The goal of this internship is to take a simplified approach to prostate cancer recurrence detection form PET/CT scans, or rather the tabular data derived from patients. 
 To achieve proper documentation as well as holding up a basic scientific standard, trackable version control was required. For this reason learning basic version control via github in a "data carpentry" course was completed.
 After this the goal was to have a comprehensive overview across all created models and metrics, for this purpose MLFLOW was used as it offers easy to understand insights and comparison across models, as well as additional version control. As a base for all models the repository scikit-learn was utilised, it offers comprehensive documentation, making it easier to understand and adjust models for our intended use.
 
-# **2. Materials and Methods:**
+# **2. Materials and Methods**
 
 ## 2.1 Data processing/Study population
 The data used for this project was based on the metadata obtained from patient scans using 18F-PSMA-1007 PET/CT imaging from the department of Nuclear Medicine at the University Hospital Würzburg, conducted between 2019 and 2023. The initially provided patient split was 1016 scans/patients for training, 188 for validation and 200 as a test set to be conducted at the end of the project.
@@ -93,7 +93,7 @@ The specific parameters given for parameter tuning of the decision tree <mark st
 ###### 2.6.2 Model B: Random Forest
 The initial Random Forest was trained at default settings with the cleaned data, establishing a base for this algorithms performance.
 
-The second iteration of model B used parameter tuning for optimisation. This time two tunign runs were conducted to establish the difference between a smaller, more robust forest and a larger, less robust forest. Töhe included parameters are as follows:
+The second iteration of model B used parameter tuning for optimisation. This time two tuning runs were conducted to establish the difference between a smaller, more robust forest and a larger, less robust forest. The included parameters are as follows:
 
 | Parameter (value)                         | Function                                                                                                                                                     |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -110,18 +110,46 @@ The second iteration of model B used parameter tuning for optimisation. This tim
 
 ###### 2.6.3 Model C: Gradient boosting 
 
+
 # **Results**
 
 Classification matrix for each model and train to test comparison
 Plotting of data vs label
 
+- Model A: Tree, all data
+MLFLWO run and logging needed
 
+- M A.2: Tree, trimmed data
+MLFLOW run and logging needed
+- M A.3: Tree, trimmed, grid search
+
+- M B.1: Forest, trimmed data
+MLFLOW run and logging needed
+- M B.2a/b: Forest, trimmed data, grid search
+MLFLOW evaluate needed
+- M B.3: Forest, trimmed, grid search, k-fold set splitting
+MLFLOW run and logging needed
+- M C: Boost, trimmed
+
+- M C.2: Boost, trimmed, grid search
+- 
 # **Discussion**
-good at true negatives, bad at true positives
-With this little correlation within the few datapoint, higher results would have been surprising.
+This works aim was to develop traditional machine learning model, that could predict PC recurrence form only the metadata provided from patients coming in for restaging PSMA-PET/CT Scans. 
+Starting form the simplest algorithm with a naïve approach utilising no data trimming, which resulted in mostly random predictions, with only an above expected accuracy. This was due to the inclusion of primary staging patients and some patients coming in for multiple scans. In most cases these were cancerous, leading to bias. To remedy this, any primary staging as well as patient identifiers were removed, while respecting the set splitting mask, leading to a worse result in Accuracy and consequently F1, while slightly improving Precision and Recall. 
+Interestingly, even after extensive testing, only one Parameter seemed to have a meaningful impact on metrics. "min_weight_fracton_leaf" of 0.1 solved the issue of overfitting and filtering out noise. Including or Excluding the parameter change from subsequent grid searches showed other parameter combinations that performed better than the default settings, but could not reach the combination of default settings with a minimum fraction.
+Creating the next models based on a random forest algorithm, but keeping the previous findings in mind. The initial small forest seemed to have mostly copied the individual trees previously made, as the results only start to differ past the third decimal point. Considering the first attempt at a forest was built around a smaller forest with strong learners, this outcome could have been predicted. The parameter tuning that followed was split into two approaches. The approach to refine the "robust" forest showed no improvement over the previous model. While expected, this confirms that the additional parameters available for tuning in a forest model did not affect decision making.
+[[results grid search wide]] 
+
+As the most complex and final model, gradient boosting was expected to perform the best or at least similar to all the previous models. The results however show a 5 to 10% decrease in performance for F1, in the recall metric is where the performance drop is the most significant. While, with the given data, a singular tree created via iterative learning, might not have been better than the previous models using a multitude of trees or a single fine-tuned tree, this result was unexpected. As a cause for this might be an insufficient exploration of the parameters available for this algorithm. Due to the large quantity of parameters only a selected number of "more important" parameters were chosen and had to be run in grid search batches, as the exhaustive exploration using the previous method would have taken around 3 year based on rough estimations (using the universities provided Lenovo Thinkpad). In favour of learn set shrinkage and learn rate reduction, which was explained above, the concept of early stoppage has been neglected here. Early stopping could have allowed for more extensive parameter testing, as it can significantly reduce the train time for most runs. Other ways to more extensively test parameter combinations for gradient boosting could have been Bayesian search instead of the exhaustive grid search or the third party framework OPTUNA. These issues were brought up and considered but deemed outside the scope of this project. There may be a configuration not explored with better performance. 
+
+The rate of true positive's could be seen as the clinically most significant metric, as it dictated the rate of true positives. When looking at the individual models confusion metrics it becomes apparent that the sensitivity is significantly higher than the recall, often balancing out the data. After running a spearman's rank correlation using seaborn, the weak correlation between Age and PSA levels (both calculated separately) becomes apparent. The more significant finding was the comparatively stronger negative correlation between prostatectomy status and label. 
+![[Pasted image 20251204152322.png]]
+This, combined with the low amount of features processed in training, would be an explanation as to why all models across the board struggle with recall while still achieving acceptable numbers compared to the original deep learning model. This seems to be an issue of the original model too, as in the final test with only a 56.7% rate of correct predictions for true positives but an 88% rate for true negatives, the previous versions also have a heavy bias towards true negatives. Reinforcing our believe that prostatectomy status plays a heavy role in the prediction. ![[Pasted image 20251204152441.png]]
+
+[[section about final test set]]
 # **Conclusion**
-After testing multiple algorithms with various parameter configurations it seems that despite getting near the performance of the deep learning model used for comparison, but unable to reach the same or better performance in the current setting. 
-Considering the small amount of data used to train the models there is potential to increase performance by carefully selecting and determining significant image features to enter into training. These results are in line with the expected outcome of the supervisor and show that, while there still is some potential improvements to be had using classical ML methods, 
+After testing multiple algorithms with various parameter configurations and complexities, it seems that despite getting near the performance of the deep learning model used for comparison we were unable to reach the same or better performance with the available data. 
+Considering the small amount of tabular data used to train the models there is potential to increase performance by carefully selecting and determining significant image features to enter into training. These results are in line with the expected outcome of the supervisor and show that, while there still is some potential improvements to be had using classical ML methods, 
 choosing a deep learning model for the initial project was not a bad choice. 
 
 
