@@ -1,0 +1,15 @@
+creation_timestamp: 1763039793396
+current_stage: None
+deployment_job_state: null
+description: ''
+last_updated_timestamp: 1763039793396
+model_id: m-437145fb763840b2b294ae6a8d53a066
+name: XGBoost_default
+run_id: 3fa0a62a3ffe4c28a00b084dfb941d1c
+run_link: ''
+source: file:///C:/Users/s434037/Desktop/Bachelor/projects/mlruns/680592150702472532/models/m-437145fb763840b2b294ae6a8d53a066/artifacts
+status: READY
+status_message: null
+storage_location: file:///C:/Users/s434037/Desktop/Bachelor/projects/mlruns/680592150702472532/models/m-437145fb763840b2b294ae6a8d53a066/artifacts
+user_id: null
+version: 1
