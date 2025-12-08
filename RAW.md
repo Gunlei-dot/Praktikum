@@ -95,21 +95,41 @@ The initial Random Forest was trained at default settings with the cleaned data,
 
 The second iteration of model B used parameter tuning for optimisation. This time two tuning runs were conducted to establish the difference between a smaller, more robust forest and a larger, less robust forest. The included parameters are as follows:
 
-| Parameter (value)                         | Function                                                                                                                                                     |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Criterion<br>(gini, entropy)              | Measuring the quality of a split based on Gini impurity or shannon information gain***                                                                       |
-| max_depth<br>(none,10, 20, 30)            | Maximum amount of splits the tree is allowed to make. If none, tree will continue splitting till all leaves are pure, or other parameters prevent splitting. |
-| min_samples_split <br>(2, 5, 10)          | The minimum number of samples required to split a node                                                                                                       |
-| min_samples_leaf <br>(1, 2, 4)            | The minimum number of samples required to be contained within a lea node, forces every split to at least contain (min_number_leaf) on both sides             |
-| min_weight_fraction_leaf (0.0, 0.1, 0.2)  | The minimum fraction of samples required at a leaf note, if weight is provided, equal weight is assumed                                                      |
-| random_state <br>(42)                     | Choose the seed determining the randomness of the method. Used to ensure replicable results each time.                                                       |
-| max_leaf_nodes <br>(None, 10, 20, 30)     | Grow the best tree using the specified number of leaves. <br>Best tree is determined by elative reduction in impurity                                        |
-| min_impurity_decrease <br>(0.0, 0.1, 0.2) | Nodes split must decrease impurity by as much or more. Decrease is calculated***                                                                             |
-| ccp_alpha <br>(0.0, 0.1, 0.2)             | Parameter for minimal Cost-Complexity Pruning.<br>Subtree with largest cost complexity smaller than ccp_alpha will be chosen.***                             |
+| Parameter (value)                           | Function                                                                                                                                                     |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Criterion<br>(gini, entropy)                | Measuring the quality of a split based on Gini impurity or shannon information gain.                                                                         |
+| max_depth<br>(none,10, 20, 30)              | Maximum amount of splits the tree is allowed to make. If none, tree will continue splitting till all leaves are pure, or other parameters prevent splitting. |
+| min_samples_split <br>(2, 3, 4)             | The minimum number of samples required to split a node.                                                                                                      |
+| min_samples_leaf <br>(1, 2, 4)              | The minimum number of samples required to be contained within a lea node, forces every split to at least contain (min_number_leaf) on both sides.            |
+| min_weight_fraction_leaf (0.0, 0.1, 0.2)    | The minimum fraction of samples required at a leaf note, if weight is provided, equal weight is assumed.                                                     |
+| random_state <br>(42)                       | Choose the seed determining the randomness of the method. Used to ensure replicable results each time.                                                       |
+| max_leaf_nodes <br>(None, 10, 20, 30)       | Grow the best tree using the specified number of leaves. <br>Best tree is determined by elative reduction in impurity.                                       |
+| min_impurity_decrease <br>(0.0, 0.01, 0.1,) | Nodes split must decrease impurity by as much or more. Decrease is calculated.                                                                               |
+| ccp_alpha <br>(0.0, 0.01, 0.0015, 0.01)     | Parameter for minimal Cost-Complexity Pruning.<br>Subtree with largest cost complexity smaller than ccp_alpha will be chosen.                                |
+| n_estimators<br>(20, 100)                   | The amount of trees trained for the ensemble. The final result is determined by a collective vote of all estimators                                          |
+| bootstrap<br>(bool)                         | Enables/Disables bootstrapping. If true, a subset of the dataset is used to train each tree, reducing bias.                                                  |
+
 
 
 ###### 2.6.3 Model C: Gradient boosting 
+The first iteration of the GradientBoostingClassifier used the default settings with no subsampling, early stoppage and a low learning rate.
 
+Due to the amount of variables to consider for each parameter, the grid search had to be done in batches, with the best performing parameters being used in the next batch. Some parameters were left out of testing, as they were shown to have limited impact in the previous optimisations. 
+
+The options of early stoppage and warm starts were both not considered because of this.
+Focus of the grid search was to optimise the Gradient Boosting regularisation and the tree itself.
+
+| Parameter (value)                | Function                                                                                                                                                           |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| loss<br>(log_loss)               | The log loss refers to the binomial deviance in this classification problem.<br>Its the loss function to be optimised.                                             |
+| learning_rate<br>(0.1, 0.2, 0.5) | Dictates the impact of each individual tree on the loss function. Combined with subsampling it can be used for regularisation.                                     |
+| n_estimatiors<br>(20, 100)       | Number of iterative boosting stages to perform. Due to robustness against overfitting, higher numbers typically lead to better results.                            |
+| subsample<br>(0.5, 0.8, 1.0)     | The fraction of samples used to train each boosting stage. Any value below 1 will result in Stochastic Gradient Boosting, reducing variance while increasing bias. |
+| criterion<br>(friedman_mse)      | Measuring function of split quality using mean squared error with improvement score by Friedman.                                                                   |
+| warm_start<br>(bool)             | Enables reuse of a previous solution as starting point, adding more estimators to the ensemble.                                                                    |
+| validation_fraction<br>(float)   | Only used in case of early stoppage. Fraction of training set, set aside for validation in case of stoppage.                                                       |
+| n_iter_no_change<br>(int)        | Parameter deciding early stopping when validation scores across iterations do not improve. When set to none, no early stoppage will occur.                         |
+| tol<br>(float)                   | Tolerance determining the minimum improvement for the validation score across n_iter_no_change.                                                                    |
 
 # **Results**
 
