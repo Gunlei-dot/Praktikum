@@ -3,7 +3,7 @@
 # **Abstract**:
 
 ### Background: 
-As by far the most common cancer in <mark style="background: #FF5582A6;">men </mark>, Prostate Cancer (PC) is of great interest for medical research. Of the various established imaging methods PSMA-directed positron emission tomography (PET) has prove itself as a reliable method for diagnosing and detecting recurrent PC as well as metastasis. A deep learning model previously trained on [18F]-prostate specific membrane antigen (PSMA)-1007 PET-Scans to detect local PC recurrence serves as a base line for comparison of performance. Training another model with classic machine learning methods, on the same dataset, the goal was to see how close in performance we could get with as simplistic of an approach as possible. 
+As by far the most common cancer in men, Prostate Cancer (PC) is of great interest for medical research. Of the various established imaging methods PSMA-directed positron emission tomography (PET) has proven itself as a reliable method for diagnosing and detecting recurrent PC as well as metastasis. A deep learning model previously trained on [18F]-prostate specific membrane antigen (PSMA)-1007 PET-Scans to detect local PC recurrence serves as a base line for comparison of performance. Training another model with classic machine learning methods, on the same dataset, the goal was to see how close in performance we could get with as simplistic of an approach as possible. 
 ### Methods:
 Multiple models based on three different algorithms were trained on the metadata of a dataset including 1404 [18F]-PSMA-1007 PET/CT re staging scans from patients with histologically confirmed prostate cancer. [[results]]
 ### Conclusion:
@@ -24,10 +24,10 @@ Per patient there are two randomised IDs for privacy, age of the patient, gender
 
 [[table]]
 
-The patient data was  simplified as much as possible,after the initial model training, to introduce as little variables or potential issues as possible. For this, any data containing the label 2, rows containing features with N/A and primary staging patients were excluded after initial testing including all data. After this, only the relevant features of age, psa and px were included in further training. 
+The patient data was  simplified as much as possible, after the initial model training, to introduce as little variables or potential issues as possible. For this, any data containing the label 2, rows containing features with N/A and primary staging patients were excluded after initial testing including all data. After this, only the relevant features of age, psa and px were included in further training. 
 
 Val/Train masks were created and matching was done via the index, to remove both patient IDs. 
-The overall data was reduced from 1205 viable rows to <mark style="background: #FFB8EBA6;">~1000</mark> rows, with X and Y being removed for the test and the validation set.
+The overall data was reduced from 1205 viable rows to 872 rows, with X and Y being split for the test and the validation set.
 
 
 ## 2.2 Data logging/documentation via GitHub/MLFLOW
@@ -57,7 +57,7 @@ The most important factor for this to work is something called bootstrapping. Tr
 Two approaches tested to this were a bigger forest with weak learners (100+ trees, max depth 3-10) as the default approach to this problem. The other approach was using a smaller forest (20 trees, no depth limit) with strong learner trees (20 trees, no depth limit) to see if it could compete with the larger forest. 
 
 ## 2.5 XGBoost
-The Extreme Gradient Boosting algorithm is also an ensemble method, similar to the random forest and based on decision trees. Originally seen in [[Greedy Function Approximation: A Gradient Boosting Machine, by Friedman]] and the further developed and enhanced for use by Tianqi C<mark style="background: #FFB8EBA6;">hen</mark>.
+The Extreme Gradient Boosting algorithm is also an ensemble method, similar to the random forest and based on decision trees. Originally seen in [[Greedy Function Approximation: A Gradient Boosting Machine, by Friedman]] and then further developed and enhanced for use by Tianqi C<mark style="background: #FFB8EBA6;">hen</mark>.
 Instead of training multiple trees at once, unlike the Random Forest, XGBoost trains multiple weak trees sequentially to correct the mistakes of the previous trees using something called gradient descent. This process involves calculating the log loss function from the residuals, the difference between the predicted and actual value. To minimize this function different parameters are scored with changed weights to create a strong classifier.
 An integral factor for determining the models performance is the learning rate, as it scales the step length of the gradient descent procedure, that is to say it influences the impact of each individual tree. To still ensure sufficient learning, the number of iterations is usually increased to account for a reduced learning rate. Combined with bagging, or subsampling as its called for XGBoost, it can provide an substantially improved result as shown by [[T. Hastie, R. Tibshirani and J. Friedman, “Elements of Statistical Learning Ed. 2”, Springer, 2009.]] ![[Pasted image 20251203101829.png]]
 
@@ -71,13 +71,13 @@ Scikit learn provides a visualised example of early stoppage and its impact on t
 ## 2.6 Training, Optimisation and Evaluation
 
 ###### 2.6.1 Model A: Decision tree
-The initial model was using the default settings of the function provided by scikit learn and included all the tabular data without any adjustments to establish a baseline. Train and validation sets were not considered yet and a simple 80/20 random split was introduced.
+The initial model was using the default settings of the function provided by scikit learn and included all the tabular data, without any adjustments, to establish a baseline. Train and validation sets were not considered yet and a simple 80/20 random split was introduced.
 
 Following this, multiple features deemed not relevant or potentially damaging to the training process were dropped and the given splits into train and validation sets considered.
 
 The third and final version of the decision tree model used five-fold GridSearchCV to systematically check for the best parameter combination out of the given values. From this point onwards the random state 42 was introduced as a constant, to keep the model consistent and replicable, removing another layer of randomness that could affect results in either way.
 
-The specific parameters given for parameter tuning of the decision tree <mark style="background: #FFB8EBA6;"> include:</mark>
+The specific parameters given for parameter tuning of the decision tree include:
 
 | Parameter (value)                         | Function                                                                                                                                                     |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -91,13 +91,14 @@ The specific parameters given for parameter tuning of the decision tree <mark st
 | min_impurity_decrease <br>(0.0, 0.1, 0.2) | Nodes split must decrease impurity by as much or more. Decrease is calculated***                                                                             |
 | ccp_alpha <br>(0.0, 0.1, 0.2)             | Parameter for minimal Cost-Complexity Pruning.<br>Subtree with largest cost complexity smaller than ccp_alpha will be chosen.***                             |
 ###### 2.6.2 Model B: Random Forest
-<mark style="background: #FF5582A6;">The initial Random Forest was trained at default settings with the cleaned data, establishing a base for this algorithms performance.</mark>
+The initial random forest used the same parameters that were determined to be best for the Decision Tree, with a low estimat
+or number of 20.
 
 The second iteration of model B used parameter tuning for optimisation. This time two tuning runs were conducted to establish the difference between a smaller, more robust forest and a larger, less robust forest. The included parameters are as follows:
 
 | Parameter (value)                           | Function                                                                                                                                                     |
 | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Criterion<br>(gini, entropy)                | Measuring the quality of a split based on Gini impurity or shannon information gain.                                                                         |
+| Criterion<br>(gini)                         | Measuring the quality of a split based on Gini impurity or shannon information gain.                                                                         |
 | max_depth<br>(none,10, 20, 30)              | Maximum amount of splits the tree is allowed to make. If none, tree will continue splitting till all leaves are pure, or other parameters prevent splitting. |
 | min_samples_split <br>(2, 3, 4)             | The minimum number of samples required to split a node.                                                                                                      |
 | min_samples_leaf <br>(1, 2, 4)              | The minimum number of samples required to be contained within a lea node, forces every split to at least contain (min_number_leaf) on both sides.            |
@@ -141,32 +142,33 @@ The grid search for the random forest was split into a smaller forest of strong 
 ('min_weight_fraction_leaf': [0.1], 'n_estimators': [20], 'max_depth': [None, 10, 20, 30], 'ccp_alpha': [0.0, 0.005, 0.01, 0.0015]) 
 and a larger forest of weaker learners (model B.2b) with:
 ('min_samples_split': [2, 3, 4], 'min_weight_fraction_leaf': [0.0, 0.01, 0.1], 'min_impurity_decrease': [0.0, 0.01, 0.1], 'max_leaf_nodes': [None, 10, 20])
-Model B.2a achieved better results with an F1-score of 0.74 and balanced accuracy of 0.76.
+Model B.2a achieved better results with an F1-score of 0.74 and a balanced accuracy of 0.76.
 Model B.2.b performed worse with an F1-score of 0.70 and a balanced accuracy of 0.72.
 
 The first Gradient Boosting model C.1 used the same modified data and default parameters resulting in an F1-score of 0.70 with a balanced accuracy of 0.70.
 Multiple grid searches combined, while keeping the determined best parameters resulted in model C.2, these stayed same to the default and achieved an F1-score of 0.70 with a balanced accuracy of 0.70.
 
-Model B.2b was chosen for evaluation with the hold out set, that was not used in either training nor validation in any models.
+Model B.2b was chosen for evaluation with the hold out set, that was not used in either training nor validation in any models. Resulting in an F1-score of 0.70 with a balanced accuracy of 0.70.
 # **Discussion**
-This works aim was to develop traditional machine learning model, that could predict PC recurrence form only the metadata provided from patients coming in for restaging PSMA-PET/CT Scans. 
-Starting form the simplest algorithm with a naïve approach utilising no data trimming, which resulted in mostly random predictions, with only an above expected accuracy. This was due to the inclusion of primary staging patients and some patients coming in for multiple scans. In most cases these were cancerous, leading to bias. To remedy this, any primary staging as well as patient identifiers were removed, while respecting the set splitting mask, leading to a worse result in Accuracy and consequently F1, while slightly improving Precision and Recall. 
+This works aim was to develop traditional machine learning model, that could predict PC recurrence form only the metadata obtained from patients coming in for restaging PSMA-PET/CT Scans. 
+Starting form the simplest algorithm with a naïve approach utilising no data trimming, which resulted in mostly random predictions, with an accuracy exceeding expectations. This was due to the inclusion of primary staging patients and some patients coming in for multiple scans. In most cases these were cancerous, leading to bias. To remedy this, any primary staging as well as patient identifiers were removed, while respecting the set splitting mask, leading to a worse result in Accuracy and consequently F1, while slightly improving Precision and Recall. 
 Interestingly, even after extensive testing, only one Parameter seemed to have a meaningful impact on metrics. "min_weight_fracton_leaf" of 0.1 solved the issue of overfitting and filtering out noise. Including or Excluding the parameter change from subsequent grid searches showed other parameter combinations that performed better than the default settings, but could not reach the combination of default settings with a minimum fraction.
 Creating the next models based on a random forest algorithm, but keeping the previous findings in mind. The initial small forest seemed to have mostly copied the individual trees previously made, as the results only start to differ past the third decimal point. Considering the first attempt at a forest was built around a smaller forest with strong learners, this outcome could have been predicted. The parameter tuning that followed was split into two approaches. The approach to refine the "robust" forest showed no improvement over the previous model. While expected, this confirms that the additional parameters available for tuning in a forest model did not affect decision making.
-[[results grid search wide]] 
-[[why is leaf so good]]
-As the most complex and final model, gradient boosting was expected to perform the best or at least similar to all the previous models. The results however show a 5 to 10% decrease in performance for F1, in the recall metric is where the performance drop is the most significant. While, with the given data, a singular tree created via iterative learning, might not have been better than the previous models using a multitude of trees or a single fine-tuned tree, this result was unexpected. As a cause for this might be an insufficient exploration of the parameters available for this algorithm. Due to the large quantity of parameters only a selected number of "more important" parameters were chosen and had to be run in grid search batches, as the exhaustive exploration using the previous method would have taken around 3 year based on rough estimations (using the universities provided Lenovo Thinkpad). In favour of learn set shrinkage and learn rate reduction, which was explained above, the concept of early stoppage has been neglected here. Early stopping could have allowed for more extensive parameter testing, as it can significantly reduce the train time for most runs. Other ways to more extensively test parameter combinations for gradient boosting could have been Bayesian search instead of the exhaustive grid search or the third party framework OPTUNA. These issues were brought up and considered but deemed outside the scope of this project. There may be a configuration not explored with better performance. 
+
+As the most complex and final model, gradient boosting was expected to perform the best or at least similar to all the previous models. The results however show a 5% to 10% decrease in performance for F1, in the recall metric is where the performance drop is the most significant. While, with the given data, a singular tree created via iterative learning, might not have been better than the previous models using a multitude of trees or a single fine-tuned tree, this result was unexpected. As a cause for this might be an insufficient exploration of the parameters available for this algorithm. Due to the large quantity of parameters only a selected number of "more important" parameters were chosen and had to be run in grid search batches, as the exhaustive exploration using the previous method would have taken around 3 year based on rough estimations (using the universities provided Lenovo Thinkpad). In favour of learn set shrinkage and learn rate reduction, which was explained above, the concept of early stoppage has been neglected here. Early stopping could have allowed for more extensive parameter testing, as it can significantly reduce the train time for most runs. Other ways to more extensively test parameter combinations for gradient boosting could have been Bayesian search instead of the exhaustive grid search or the third party framework OPTUNA. These issues were brought up and considered but deemed outside the scope of this project. There may be a configuration not explored with better performance. 
+
+Model B.2b was chosen for evaluation on the test set due to its larger forest. The concern with better performing models like B.2a was its small forest size with complex trees, possibly leading to bias. The performance on the test set was overall worse by only a few percent compared to the validation result. 
 
 The rate of true positive's could be seen as the clinically most significant metric, as it dictated the rate of actual cancer diagnoses. When looking at the individual models confusion metrics it becomes apparent that the sensitivity is significantly higher than the recall, often balancing out the data. After running a spearman's rank correlation using seaborn, the weak correlation between Age, PSA levels and label (all calculated separately) becomes apparent. The more significant finding was the comparatively stronger negative correlation between prostatectomy status and label. 
 ![[Pasted image 20251204152322.png]]
-This, combined with the low amount of features processed in training, would be an explanation as to why all models across the board struggle with recall while still achieving acceptable numbers compared to the original deep learning model. This seems to be an issue of the original model too, as in the final test with only a 56.7% rate of correct predictions for true positives but an 88% rate for true negatives, the previous versions also have a heavy bias towards true negatives. Reinforcing our believe that prostatectomy status plays a heavy role in the prediction. ![[Pasted image 20251204152441.png]]
+This, combined with the low amount of features processed in training, would be an explanation as to why all models across the board struggle with recall while still achieving acceptable numbers compared to the original deep learning model. This seems to be an issue of the original model too, as in the final test with only a 56.7% rate of correct predictions for true positives but an 88% rate for true negatives, the previous versions also have a heavy bias towards true negatives. Reinforcing our believe that prostatectomy status plays a heavy role in the prediction. These results are almost identical with our test set model![[Pasted image 20251204152441.png]]
+With complex problems like cancer detection, statistical methods will run into a hard limit for performance, also known as bayes error rate. It describes a specific error limit for any classification problem duo to outliers. This in turn means that, no matter how how complex and detailed our model is, it wont be able to reach perfect/near perfect performance. While we don't believe to have reached the overall limit for cancer detection, as shown in other papers. With the current data there may be a hard limit we are not able to surpass. 
 
-[[section about final test set]]
 # **Conclusion**
-After testing multiple algorithms with various parameter configurations and complexities, it seems that despite getting near the performance of the deep learning model used for comparison we were unable to reach the same or better performance with the available data. 
-Considering the small amount of tabular data used to train the models there is potential to increase performance by carefully selecting and determining significant image features to enter into training. These results are in line with the expected outcome of the supervisor and show that, while there still is some potential improvements to be had using classical ML methods, 
+After testing multiple algorithms with various parameter configurations and complexities, it seems that despite reaching similar performance of the deep learning model used for comparison, we were unable to reach better performance with the available data. 
+Considering the small amount of tabular data used to train the models there is potential to increase performance by carefully selecting and determining significant image features to enter into training. These results are in line with the expected outcome of the supervisor. They show that, while there still is some potential improvements to be had using classical ML methods, 
 choosing a deep learning model for the initial project was not a bad choice. 
-[[unable to surpas baesian error?]]
+
 
 # **Appendix**
 
